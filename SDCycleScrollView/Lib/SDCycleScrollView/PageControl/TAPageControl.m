@@ -10,6 +10,7 @@
 #import "TAAbstractDotView.h"
 #import "TAAnimatedDotView.h"
 #import "TADotView.h"
+#import "UIView+SDExtension.h"
 
 /**
  *  Default number of pages for initialization
@@ -39,7 +40,7 @@ static NSInteger const kDefaultSpacingBetweenDots = 8;
 /**
  *  Default dot size
  */
-static CGSize const kDefaultDotSize = {8, 8};
+static CGSize const kDefaultDotSize = {20, 8};
 
 
 @interface TAPageControl()
@@ -102,6 +103,7 @@ static CGSize const kDefaultDotSize = {8, 8};
     self.currentPage            = kDefaultCurrentPage;
     self.hidesForSinglePage     = kDefaultHideForSinglePage;
     self.shouldResizeFromCenter = kDefaultShouldResizeFromCenter;
+    self.currentDotSize = CGSizeMake(20, 8);
 }
 
 
@@ -132,7 +134,7 @@ static CGSize const kDefaultDotSize = {8, 8};
 
 - (CGSize)sizeForNumberOfPages:(NSInteger)pageCount
 {
-    return CGSizeMake((self.dotSize.width + self.spacingBetweenDots) * pageCount - self.spacingBetweenDots , self.dotSize.height);
+    return CGSizeMake((self.dotSize.width + self.spacingBetweenDots) * (pageCount -1) - self.spacingBetweenDots + self.currentDotSize.width + self.spacingBetweenDots , self.dotSize.height);
 }
 
 
@@ -151,7 +153,7 @@ static CGSize const kDefaultDotSize = {8, 8};
         if (i < self.dots.count) {
             dot = [self.dots objectAtIndex:i];
         } else {
-            dot = [self generateDotView];
+            dot = [self generateDotViewWithIndex:i];
         }
         
         [self updateDotFrame:dot atIndex:i];
@@ -195,9 +197,16 @@ static CGSize const kDefaultDotSize = {8, 8};
 {
     // Dots are always centered within view
     CGFloat x = (self.dotSize.width + self.spacingBetweenDots) * index + ( (CGRectGetWidth(self.frame) - [self sizeForNumberOfPages:self.numberOfPages].width) / 2);
+    if (index > self.currentPage) {
+        x = (self.dotSize.width + self.spacingBetweenDots) * (index -1) + self.currentDotSize.width + self.spacingBetweenDots  + ( (CGRectGetWidth(self.frame) - [self sizeForNumberOfPages:self.numberOfPages].width) / 2);
+    }
     CGFloat y = (CGRectGetHeight(self.frame) - self.dotSize.height) / 2;
     
-    dot.frame = CGRectMake(x, y, self.dotSize.width, self.dotSize.height);
+    if (index == self.currentPage) {
+        dot.frame = CGRectMake(x, y, self.currentDotSize.width, self.currentDotSize.height);
+    } else {
+       dot.frame = CGRectMake(x, y, self.dotSize.width, self.dotSize.height);
+    }
 }
 
 
@@ -209,7 +218,7 @@ static CGSize const kDefaultDotSize = {8, 8};
  *
  *  @return The UIView object representing a dot
  */
-- (UIView *)generateDotView
+- (UIView *)generateDotViewWithIndex:(NSInteger)index
 {
     UIView *dotView;
     
@@ -220,7 +229,11 @@ static CGSize const kDefaultDotSize = {8, 8};
         }
     } else {
         dotView = [[UIImageView alloc] initWithImage:self.dotImage];
+        if (index == self.currentPage) {
+            dotView.frame = CGRectMake(0, 0, self.currentDotSize.width, self.currentDotSize.height);
+        } else {
         dotView.frame = CGRectMake(0, 0, self.dotSize.width, self.dotSize.height);
+        }
     }
     
     if (dotView) {
@@ -228,7 +241,7 @@ static CGSize const kDefaultDotSize = {8, 8};
         [self.dots addObject:dotView];
     }
     
-    dotView.userInteractionEnabled = YES;    
+    dotView.userInteractionEnabled = YES;
     return dotView;
 }
 
@@ -245,6 +258,15 @@ static CGSize const kDefaultDotSize = {8, 8};
         TAAbstractDotView *abstractDotView = (TAAbstractDotView *)[self.dots objectAtIndex:index];
         if ([abstractDotView respondsToSelector:@selector(changeActivityState:)]) {
             [abstractDotView changeActivityState:active];
+            [self.dots enumerateObjectsUsingBlock:^(UIView *obj, NSUInteger idx, BOOL * _Nonnull stop) {
+                [self updateDotFrame:obj atIndex:idx];
+                if (idx == index) {
+                    obj.sd_width = self.currentDotSize.width;
+                } else {
+                    obj.sd_width = self.dotSize.width;
+                }
+                
+            }];
         } else {
             NSLog(@"Custom view : %@ must implement an 'changeActivityState' method or you can subclass %@ to help you.", self.dotViewClass, [TAAbstractDotView class]);
         }

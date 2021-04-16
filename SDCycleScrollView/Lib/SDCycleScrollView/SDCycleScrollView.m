@@ -87,7 +87,7 @@ NSString * const ID = @"SDCycleScrollViewCell";
     _pageControlDotSize = kCycleScrollViewInitialPageControlDotSize;
     _pageControlBottomOffset = 0;
     _pageControlRightOffset = 0;
-    _pageControlStyle = SDCycleScrollViewPageContolStyleClassic;
+    _pageControlStyle = SDCycleScrollViewPageContolStyleAnimated;
     _hidesForSinglePage = YES;
     _currentPageDotColor = [UIColor whiteColor];
     _pageDotColor = [UIColor lightGrayColor];
@@ -294,6 +294,12 @@ NSString * const ID = @"SDCycleScrollViewCell";
     [self setupPageControl];
 }
 
+
+-(void)setCurrentPageControlDotSize:(CGSize)currentPageControlDotSize {
+    _currentPageControlDotSize = currentPageControlDotSize;
+    [self setupPageControl];
+}
+
 - (void)setImagePathsGroup:(NSArray *)imagePathsGroup
 {
     [self invalidateTimer];
@@ -397,6 +403,7 @@ NSString * const ID = @"SDCycleScrollViewCell";
             pageControl.dotColor = self.currentPageDotColor;
             pageControl.userInteractionEnabled = NO;
             pageControl.currentPage = indexOnPageControl;
+            pageControl.currentDotSize = self.currentPageControlDotSize;
             [self addSubview:pageControl];
             _pageControl = pageControl;
         }

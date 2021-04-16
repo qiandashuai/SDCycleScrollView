@@ -168,6 +168,7 @@ typedef enum {
 
 /** 分页控件小圆标大小 */
 @property (nonatomic, assign) CGSize pageControlDotSize;
+@property (nonatomic, assign) CGSize currentPageControlDotSize;
 
 /** 当前分页控件小圆标颜色 */
 @property (nonatomic, strong) UIColor *currentPageDotColor;

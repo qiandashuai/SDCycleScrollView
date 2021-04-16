@@ -41,6 +41,8 @@
  */
 @property (nonatomic) CGSize dotSize;
 
+@property (nonatomic) CGSize currentDotSize;
+
 
 @property (nonatomic, strong) UIColor *dotColor;
 
